@@ -1,4 +1,5 @@
-import requests, sys
+#coding=utf-8
+import requests, sys, codecs
 from bs4 import BeautifulSoup
 
 def check_ip_range(iprange):
@@ -9,7 +10,7 @@ def check_ip_range(iprange):
             print "Wrong IP format."
             sys.exit()
         if len(addr) != 4: 
-            print "IP address is less than 4 parts."
+            print "IP address is ilegal."
             sys.exit()
         for i in range(4):
             try:
@@ -45,7 +46,7 @@ def get_ip(ipaddr):
     a = ipaddr.split('.')
     return a
 
-iprange = raw_input('Please input the ip range,\nsuch as xxx.xxx.xxx.xxx-xxx.xxx.xxx.xxx:')
+iprange = raw_input('Please input the ip range,\nsuch as 8.8.8.8-8.8.8.9:\n\t')
 check_ip_range(iprange)
 start_ip = iprange.split('-')[0]
 end_ip = iprange.split('-')[1]
@@ -59,11 +60,25 @@ for i in range(ip_int(start_ip), ip_int(end_ip)+1):
     except:
         print 'Some errors happened, check your network or something else.'
     else:
-        soup = BeautifulSoup(r.text, 'lxml')
-        for tbody in soup.find_all('tbody'):
-            for tr in soup.find_all('tr'):
-                print tr.find('td').string
-                print tr.find('th').string
-        for ul in soup.find_all('ul', class_ = 'ports'):
-            for li in ul.find_all('li'):
-                print li.find('a').string
+        with codecs.open('result.txt', 'a', 'utf-8') as f:
+            soup = BeautifulSoup(r.text, 'lxml')
+            td = []
+            th = []
+            a = []
+            for tbody in soup.find_all('tbody'):
+                for tr in soup.find_all('tr'):
+                    td.append(tr.find('td').string)
+                    th.append(tr.find('th').string)
+            for ul in soup.find_all('ul', class_ = 'ports'):
+                for li in ul.find_all('li'):
+                    a.append(li.find('a').string)
+            f.write('\n' + 'IP' + '\t')
+            for j in range(len(td)):
+                f.write(td[j] + '\t')
+            for j in range(len(a)):
+                f.write('Port' + '\t')
+            f.write('\n' + str(int_ip(i)) + '\t')
+            for j in range(len(th)):
+                f.write(th[j] + '\t')
+            for j in range(len(a)):
+                f.write(a[j] + '\t')
