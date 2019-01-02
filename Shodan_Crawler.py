@@ -1,5 +1,5 @@
 #coding=utf-8
-import requests, sys, codecs
+import requests, sys, random, time
 from bs4 import BeautifulSoup
 
 def check_ip_range(iprange):
@@ -46,6 +46,14 @@ def get_ip(ipaddr):
     a = ipaddr.split('.')
     return a
 
+def change_ua():
+#Change the user-agent radomly from the text file.
+    random_ua = dict()
+    with open('user-agents.txt', 'r') as f:
+        lines = f.readlines()
+        random_ua['user-agent'] = random.choice(lines).strip()
+    return random_ua
+
 iprange = raw_input('Please input the ip range,\nsuch as 8.8.8.8-8.8.8.9:\n\t')
 check_ip_range(iprange)
 start_ip = iprange.split('-')[0]
@@ -56,11 +64,13 @@ ip_int = lambda x:sum([256**j*int(i) for j,i in enumerate(x.split('.')[::-1])])
 
 for i in range(ip_int(start_ip), ip_int(end_ip)+1):
     try:
-        r = requests.get('https://www.shodan.io/host/' + int_ip(i))
+        r = requests.get('https://www.shodan.io/host/' + int_ip(i), headers = change_ua())
+        time.sleep(3)
+        #Set your own time to sleep.
     except:
         print 'Some errors happened, check your network or something else.'
     else:
-        with codecs.open('result.txt', 'a', 'utf-8') as f:
+        with open('result.txt', 'a') as f:
             soup = BeautifulSoup(r.text, 'lxml')
             td = []
             th = []
